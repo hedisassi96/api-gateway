@@ -1,0 +1,208 @@
+openapi: 3.0.4
+info:
+  title: Swagger API-Gateway-Admin - OpenAPI 3.0
+  description: |-
+    Admin API specifications for the API
+  version: 1.0.0
+paths:
+  /apis:
+    post:
+      summary: Register a new API.
+      description: Register a new API.
+      operationId: registerAPI
+      requestBody:
+        description: Register a new API
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/API'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        '400':
+          description: Invalid API
+        '401':
+          description: API already exists
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      summary: Retrieve all existing APIs.
+      description: Retrieve all existing APIs.
+      operationId: listAPI
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPIsResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/{apiId}/{version}:
+    get:
+      summary: Retrieve an existing API.
+      description: Retrieve an existing API using its ID.
+      operationId: getAPI
+      parameters:
+        - in: path
+          name: apiId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: version
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        '404':
+          description: API not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      summary: Update an existing API.
+      description: Update an existing API using its ID.
+      operationId: updateAPI
+      parameters:
+        - in: path
+          name: apiId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: version
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Update an existent API
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/API'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        '400':
+          description: Invalid API
+        '404':
+          description: API not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      summary: Delete API.
+      description: Delete an API using its ID.
+      operationId: deleteAPI
+      parameters:
+        - in: path
+          name: apiId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: version
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        '404':
+          description: API not found
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    API:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+          description: API Status
+          enum:
+            - active
+            - deprecated
+            - inactive
+        url:
+          type: string
+      required:
+        - id
+        - version
+        - status
+        - url
+
+    ListAPIsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/API'
+
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
