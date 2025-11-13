@@ -35,7 +35,7 @@ public class ApiFileStorageService implements ApiStorageService{
                         .build();
             }
 
-            objectMapper.writeValue(file, objectMapper.writeValueAsBytes(api));
+            objectMapper.writeValue(file, api);
         } catch (final Exception e) {
             log.error("Exception encountered while saving api {} with version {}", api.getId(), api.getVersion(), e);
             throw StorageServiceException.builder()
@@ -66,7 +66,7 @@ public class ApiFileStorageService implements ApiStorageService{
     public void updateApi(API api) throws StorageServiceException {
         try{
             final File file = getApiFile(api);
-            objectMapper.writeValue(file, objectMapper.writeValueAsBytes(api));
+            objectMapper.writeValue(file, api);
         } catch (final Exception e) {
             log.error("Exception encountered while saving api {} with version {}", api.getId(), api.getVersion(), e);
             throw StorageServiceException.builder()
@@ -78,7 +78,12 @@ public class ApiFileStorageService implements ApiStorageService{
     @Override
     public void deleteApi(String apiId, String version) throws StorageServiceException {
         final File file = getApiFile(apiId, version);
-        file.deleteOnExit();
+        if (!file.delete()) {
+            throw StorageServiceException.builder()
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .errorMessage(String.format("Error while deleting api %s with version %s", apiId, version))
+                    .build();
+        }
     }
 
     @Override

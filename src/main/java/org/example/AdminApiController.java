@@ -1,7 +1,6 @@
 package org.example;
 
 import org.openapitools.model.API;
-
 import org.openapitools.model.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,19 +29,19 @@ public class AdminApiController {
     }
 
     @GetMapping("/api/{apiId}/{version}")
-    ResponseEntity<?> getAPI(@PathVariable String apiId, @PathVariable String version) throws StorageServiceException {
+    ResponseEntity<?> getAPI(@PathVariable("apiId") String apiId, @PathVariable("version") String version) throws StorageServiceException {
         final API api = apiStorageService.getApi(apiId, version);
         return ResponseEntity.of(Optional.of(api));
     }
 
     @DeleteMapping("/api/{apiId}/{version}")
-    ResponseEntity<?> deleteAPI(@PathVariable String apiId, @PathVariable String version) throws StorageServiceException {
+    ResponseEntity<?> deleteAPI(@PathVariable("apiId") String apiId, @PathVariable("version") String version) throws StorageServiceException {
         apiStorageService.deleteApi(apiId, version);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/api/{apiId}/{version}")
-    ResponseEntity<?> updateAPI(@RequestBody API api, @PathVariable String apiId, @PathVariable String version) throws ApiException, StorageServiceException {
+    ResponseEntity<?> updateAPI(@RequestBody API api, @PathVariable("apiId") String apiId, @PathVariable("version") String version) throws ApiException, StorageServiceException {
         if (!api.getId().equals(apiId)
         || !api.getVersion().equals(version)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "API ID and version cannot be changed once created");
