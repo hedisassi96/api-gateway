@@ -3,7 +3,6 @@ package org.example;
 import org.openapitools.model.API;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service

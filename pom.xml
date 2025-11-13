@@ -29,14 +29,13 @@
                             <inputSpec>${project.basedir}/specs/admin.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <configOptions>
-                                <additionalModelTypeAnnotations>@lombok.Data @lombok.NoArgsConstructor @lombok.AllArgsConstructor</additionalModelTypeAnnotations>
+                                <additionalModelTypeAnnotations> @lombok.Builder @lombok.Getter </additionalModelTypeAnnotations>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <delegatePattern>true</delegatePattern>
                             </configOptions>
                             <generateApis>false</generateApis>
                             <generateSupportingFiles>false</generateSupportingFiles>
                             <generateApiDocumentation>false</generateApiDocumentation>
-                            <configOptions>
-                                <useJakartaEe>true</useJakartaEe>
-                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>
