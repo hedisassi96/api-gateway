@@ -16,6 +16,9 @@ public class AdminApiController {
     @Autowired
     private ApiStorageService apiStorageService;
 
+    @Autowired
+    private ApiCache apiCache;
+
     @GetMapping("/apis")
     ResponseEntity<?> getAllAPIs() throws StorageServiceException  {
         final List<API> apis = apiStorageService.listApis();
@@ -25,6 +28,7 @@ public class AdminApiController {
     @PostMapping("/apis")
     ResponseEntity<?> registerAPI(@RequestBody API api) throws StorageServiceException {
         apiStorageService.insertApi(api);
+        apiCache.put(api.getId(), api.getVersion(), api.getUrl());
         return ResponseEntity.of(Optional.of(api));
     }
 
@@ -37,6 +41,7 @@ public class AdminApiController {
     @DeleteMapping("/api/{apiId}/{version}")
     ResponseEntity<?> deleteAPI(@PathVariable("apiId") String apiId, @PathVariable("version") String version) throws StorageServiceException {
         apiStorageService.deleteApi(apiId, version);
+        apiCache.delete(apiId, version);
         return ResponseEntity.ok().build();
     }
 
