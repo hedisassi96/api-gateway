@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.API;
 import org.openapitools.model.Error;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,14 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -33,6 +25,9 @@ public class GatewayController {
 
     @Autowired
     private ApiStorageService apiStorageService;
+
+    @Autowired
+    private ProxyService proxyService;
 
     @RequestMapping("/**")
     void gateway(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -55,7 +50,7 @@ public class GatewayController {
 
         final Optional<String> url = apiCache.get(apiId, version);
         if (url.isPresent()) {
-            forward(req, resp, url.get()+urlSuffix);
+            proxyService.forward(req, resp, url.get()+urlSuffix);
             return;
         }
 
@@ -64,57 +59,12 @@ public class GatewayController {
             if (api == null) {
                 resp.sendError(HttpStatus.NOT_FOUND.value());
             } else {
-                forward(req, resp, api.getUrl()+urlSuffix);
+                apiCache.put(api.getId(), api.getVersion(), api.getUrl());
+                proxyService.forward(req, resp, api.getUrl()+urlSuffix);
             }
         } catch (Exception e) {
             resp.sendError(HttpStatus.NOT_FOUND.value());
         }
-    }
-
-    private static void forward(HttpServletRequest req, HttpServletResponse resp, String urlValue) throws IOException {
-        log.info("Sending request to {}", urlValue);
-
-        final URL url = new URL(urlValue);
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-        conn.setRequestMethod(req.getMethod());
-        conn.setDoOutput(true);
-
-        if (Objects.equals(req.getMethod(), HttpMethod.POST.name())) {
-            final String postParams = getParametersMap(req.getParameterMap());
-
-            DataOutputStream paramsWriter = new DataOutputStream(conn.getOutputStream());
-            paramsWriter.writeBytes(postParams);
-            paramsWriter.flush();
-            paramsWriter.close();
-        }
-
-        InputStream remoteResponse = conn.getInputStream();
-        OutputStream localResponder = resp.getOutputStream();
-        int c;
-        while((c = remoteResponse.read()) != -1) {
-            localResponder.write(c);
-        }
-        remoteResponse.close();
-        localResponder.close();
-
-        conn.disconnect();
-    }
-
-    private static String getParametersMap(final Map<String, String[]> parameterMap) {
-        if (parameterMap.isEmpty()) {
-            return "";
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
-            sb.append(entry.getKey())
-                    .append("=")
-                    .append(entry.getValue()[0]);
-            sb.append("&");
-        }
-
-        final String result = sb.toString();
-        return result.substring(0, result.length() - 1); // cut last "&"
     }
 
     @ControllerAdvice
